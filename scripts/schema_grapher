@@ -1,0 +1,64 @@
+#!python
+import argparse
+import os
+import schema_grapher
+import sys
+from io import StringIO
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+def check_for_errors(output_lines):
+    logger.info('Evaluating output...')
+    error_happened = False
+    for line in output_lines:
+        line_lower = line.lower()
+        logger.info(line)
+        if 'error' in line_lower or 'exception' in line_lower:
+            logger.error('DID NOT EXECUTE PROPERLY')
+            error_happened = True
+    return error_happened
+
+
+class GetPrints(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio
+        sys.stdout = self._stdout
+
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Schema Grapher converts CSV data into RDF')
+    parser.add_argument('-i', type = str, required = True, help="The input config file of the parsing job.")
+    parser.add_argument('--single', default = False, action='store_true', help="Process using a single process")
+    parser.add_argument('--multiprocess', default = False, action='store_true', help="Process using multiple processes")
+    args = parser.parse_args()
+
+    parser = argparse.ArgumentParser()
+
+    if not os.path.exists(args.i):
+        raise Exception("Config file",args.i,"not found.")
+
+    if args.single and args.multiprocess:
+        raise Exception("More than one parallel processing behavior specified")
+    elif args.single:
+        logger.info("Processing in single thread mode.")
+        logger.info('Running and storing locally')
+        schema_grapher.parser.single.ParseConfigSingle(args.i)
+    elif args.multiprocess:
+        logger.info("Processing in multiprocessing mode.")
+        logger.info('Running and storing locally')
+        schema_grapher.parser.multiprocess.ParseConfigMulti(args.i)
+    else:
+        raise Exception("No processing mode selected.")
+
+if __name__ == '__main__':
+    main()
+
