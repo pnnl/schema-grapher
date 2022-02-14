@@ -12,7 +12,7 @@ or if you would like to manage with pip (easier uninstall):
     pip3 install ./
 	
 ## How to Run
-In order to run Schema Grapher a config file must be created that describes the datasets to be converted and the specification files that map the fields to the schema. Examples are given within the "example_configs" directory.
+In order to run Schema Grapher a config file must be created that describes the datasets to be converted and the specification files that map the fields to the schema.
 
 Once you have a config (in this example "config.json) you can run Schema Grapher by running the following in your shell:
 
